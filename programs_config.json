@@ -1,0 +1,38 @@
+[
+    {
+        "name": "Google Chrome",
+        "url": "https://dl.google.com/chrome/install/latest/chrome_installer.exe",
+        "filename": "chrome_installer.exe",
+        "command": "start /wait {installer} /silent /install"
+    },
+    {
+        "name": "CCleaner",
+        "url": "https://bits.avcdn.net/productfamily_CCLEANER/insttype_FREE/platform_WIN_PIR/installertype_ONLINE/build_RELEASE/cookie_mmm_ccl_003_999_a8e_m",
+        "filename": "ccleaner.exe",
+        "command": "{installer} /S"
+    },
+    {
+        "name": "Steam",
+        "url": "https://cdn.akamai.steamstatic.com/client/installer/SteamSetup.exe",
+        "filename": "steam.exe",
+        "command": "{installer} /S"
+    },
+    {
+        "name": "ghub",
+        "url": "https://download01.logi.com/web/ftp/pub/techsupport/gaming/lghub_installer.exe",
+        "filename": "ghub.exe",
+        "command": "{installer} /S"
+    },
+    {
+        "name": "python",
+        "url": "https://www.python.org/ftp/python/3.11.2/python-3.11.2-amd64.exe",
+        "filename": "python3.11.2-amd64.exe",
+        "command": "{installer} /S"
+    },
+    {
+        "name": "vscode",
+        "url": "https://code.visualstudio.com/sha/download?build=stable&os=win32-x64-user",
+        "filename": "vscode.exe",
+        "command": "{installer} /S"
+    }
+]
