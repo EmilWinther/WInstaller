@@ -8,14 +8,12 @@ import requests
 CONFIG_FILE = "programs_config.json"
 
 
-class SilentInstallerApp:
+class WInstaller:
     def __init__(self, root):
         self.root = root
-        self.root.title("Silent Installer")
+        self.root.title("WInstaller")
 
-        self.label = tk.Label(
-            root, text="Silent Software Installer", font=("Arial", 14)
-        )
+        self.label = tk.Label(root, text="WInstaller", font=("Arial", 14))
         self.label.pack(pady=10)
 
         self.install_button = tk.Button(
@@ -134,6 +132,6 @@ class SilentInstallerApp:
 
 if __name__ == "__main__":
     root = tk.Tk()
-    app = SilentInstallerApp(root)
+    app = WInstaller(root)
     root.geometry("500x450")
     root.mainloop()
