@@ -6,6 +6,7 @@ import os
 import requests
 
 CONFIG_FILE = "programs_config.json"
+LOGO_FILE = "WInstallerLogo.png"
 
 
 class WInstaller:
@@ -13,6 +14,10 @@ class WInstaller:
         self.root = root
         self.root.title("WInstaller")
         self.cancel_installation = False
+
+        # Set the application icon
+        if os.path.exists(LOGO_FILE):
+            self.root.iconphoto(True, tk.PhotoImage(file=LOGO_FILE))
 
         self.label = tk.Label(root, text="WInstaller", font=("Arial", 14))
         self.label.pack(pady=10)

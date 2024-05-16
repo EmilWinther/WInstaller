@@ -26,6 +26,7 @@ exe = EXE(
     name='WInstaller',
     debug=False,
     bootloader_ignore_signals=False,
+    icon="WInstallerLogo.ico",
     strip=False,
     upx=True,
     upx_exclude=[],
