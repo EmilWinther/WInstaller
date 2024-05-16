@@ -12,9 +12,31 @@ class WInstaller:
     def __init__(self, root):
         self.root = root
         self.root.title("WInstaller")
+        self.cancel_installation = False
 
         self.label = tk.Label(root, text="WInstaller", font=("Arial", 14))
         self.label.pack(pady=10)
+
+        self.program_frame = tk.Frame(root)
+        self.program_frame.pack(pady=10)
+
+        self.check_all_button = tk.Button(
+            root,
+            text="Check All",
+            command=self.check_all,
+            font=("Arial", 12),
+        )
+        self.check_all_button.pack(pady=5)
+
+        self.add_button = tk.Button(
+            root, text="Add Program", command=self.add_program, font=("Arial", 12)
+        )
+        self.add_button.pack(pady=5)
+
+        self.progress = ttk.Progressbar(
+            root, orient="horizontal", length=300, mode="determinate"
+        )
+        self.progress.pack(pady=10)
 
         self.install_button = tk.Button(
             root,
@@ -22,22 +44,21 @@ class WInstaller:
             command=self.install_programs,
             font=("Arial", 12),
         )
-        self.install_button.pack(pady=10)
+        self.install_button.pack(pady=5)
 
-        self.add_button = tk.Button(
-            root, text="Add Program", command=self.add_program, font=("Arial", 12)
+        self.cancel_button = tk.Button(
+            root,
+            text="Cancel Installation",
+            command=self.cancel_install,
+            font=("Arial", 12),
         )
-        self.add_button.pack(pady=10)
-
-        self.progress = ttk.Progressbar(
-            root, orient="horizontal", length=300, mode="determinate"
-        )
-        self.progress.pack(pady=10)
+        self.cancel_button.pack(pady=5)
 
         self.log_area = tk.Text(root, height=10, width=50, state="disabled")
         self.log_area.pack(pady=10)
 
         self.load_config()
+        self.create_checkboxes()
 
     def load_config(self):
         if os.path.exists(CONFIG_FILE):
@@ -72,9 +93,25 @@ class WInstaller:
             return None
 
     def install_programs(self):
+        selected_programs = [
+            program
+            for program, var in zip(self.programs_to_install, self.program_vars)
+            if var.get()
+        ]
+        if not selected_programs:
+            messagebox.showwarning(
+                "No Selection", "No programs selected for installation."
+            )
+            return
+
         self.progress["value"] = 0
-        self.progress["maximum"] = len(self.programs_to_install)
-        for program in self.programs_to_install:
+        self.progress["maximum"] = len(selected_programs)
+        self.cancel_installation = False
+        for program in selected_programs:
+            if self.cancel_installation:
+                self.log_message("Installation cancelled.")
+                break
+
             installer_path = self.download_file(program["url"], program["filename"])
             if installer_path:
                 try:
@@ -88,6 +125,36 @@ class WInstaller:
                 except subprocess.CalledProcessError as e:
                     self.log_message(f"Failed to install {program['name']}: {e}")
             self.progress["value"] += 1
+
+    def create_checkboxes(self):
+        for widget in self.program_frame.winfo_children():
+            widget.destroy()
+
+        self.program_vars = []
+        for idx, program in enumerate(self.programs_to_install):
+            var = tk.BooleanVar()
+            chk = tk.Checkbutton(
+                self.program_frame,
+                text=program["name"],
+                variable=var,
+                font=("Arial", 12),
+            )
+            chk.grid(row=idx, column=0, sticky="w")
+            self.program_vars.append(var)
+
+            edit_button = tk.Button(
+                self.program_frame,
+                text="Edit",
+                command=lambda idx=idx: self.edit_program(idx),
+            )
+            edit_button.grid(row=idx, column=1)
+
+            delete_button = tk.Button(
+                self.program_frame,
+                text="Delete",
+                command=lambda idx=idx: self.delete_program(idx),
+            )
+            delete_button.grid(row=idx, column=2)
 
     def add_program(self):
         add_window = tk.Toplevel(self.root)
@@ -123,15 +190,73 @@ class WInstaller:
                 self.save_config()
                 messagebox.showinfo("Success", f"{name} added successfully.")
                 add_window.destroy()
+                self.create_checkboxes()
             else:
                 messagebox.showwarning("Input Error", "All fields are required.")
 
         save_button = tk.Button(add_window, text="Save", command=save_program)
         save_button.pack(pady=10)
 
+    def edit_program(self, idx):
+        program = self.programs_to_install[idx]
+        edit_window = tk.Toplevel(self.root)
+        edit_window.title(f"Edit {program['name']}")
+
+        tk.Label(edit_window, text="Program Name:").pack(pady=5)
+        name_entry = tk.Entry(edit_window)
+        name_entry.insert(0, program["name"])
+        name_entry.pack(pady=5)
+
+        tk.Label(edit_window, text="Download URL:").pack(pady=5)
+        url_entry = tk.Entry(edit_window, width=50)
+        url_entry.insert(0, program["url"])
+        url_entry.pack(pady=5)
+
+        tk.Label(edit_window, text="Installer Filename:").pack(pady=5)
+        filename_entry = tk.Entry(edit_window)
+        filename_entry.insert(0, program["filename"])
+        filename_entry.pack(pady=5)
+
+        tk.Label(
+            edit_window, text="Installation Command (use {installer} for path):"
+        ).pack(pady=5)
+        command_entry = tk.Entry(edit_window, width=50)
+        command_entry.insert(0, program["command"])
+        command_entry.pack(pady=5)
+
+        def save_edits():
+            program["name"] = name_entry.get()
+            program["url"] = url_entry.get()
+            program["filename"] = filename_entry.get()
+            program["command"] = command_entry.get()
+            self.save_config()
+            messagebox.showinfo("Success", f"{program['name']} updated successfully.")
+            edit_window.destroy()
+            self.create_checkboxes()
+
+        save_button = tk.Button(edit_window, text="Save", command=save_edits)
+        save_button.pack(pady=10)
+
+    def delete_program(self, idx):
+        program_name = self.programs_to_install[idx]["name"]
+        if messagebox.askyesno(
+            "Delete Program", f"Are you sure you want to delete {program_name}?"
+        ):
+            del self.programs_to_install[idx]
+            self.save_config()
+            messagebox.showinfo("Deleted", f"{program_name} has been deleted.")
+            self.create_checkboxes()
+
+    def cancel_install(self):
+        self.cancel_installation = True
+
+    def check_all(self):
+        for var in self.program_vars:
+            var.set(not var.get())
+
 
 if __name__ == "__main__":
     root = tk.Tk()
     app = WInstaller(root)
-    root.geometry("500x450")
+    root.geometry("500x600")
     root.mainloop()

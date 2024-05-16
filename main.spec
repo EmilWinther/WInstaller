@@ -1,10 +1,10 @@
-# silent_installer.spec
+# main.spec
 # -*- mode: python ; coding: utf-8 -*-
 
 block_cipher = None
 
 a = Analysis(
-    ['silent_installer.py'],
+    ['main.py'],
     pathex=['.'],
     binaries=[],
     datas=[('programs_config.json', '.')],  # Include the config file
@@ -23,7 +23,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='silent_installer',
+    name='WInstaller',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -40,5 +40,5 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='silent_installer',
+    name='WInstaller',
 )
