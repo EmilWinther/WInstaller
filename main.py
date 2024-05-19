@@ -4,6 +4,7 @@ import subprocess
 import json
 import os
 import requests
+import threading
 
 CONFIG_FILE = "programs_config.json"
 LOGO_FILE = "WInstallerLogo.png"
@@ -46,7 +47,7 @@ class WInstaller:
         self.install_button = tk.Button(
             root,
             text="Install Programs",
-            command=self.install_programs,
+            command=self.start_installation_thread,
             font=("Arial", 12),
         )
         self.install_button.pack(pady=5)
@@ -90,6 +91,9 @@ class WInstaller:
                 r.raise_for_status()
                 with open(local_filename, "wb") as f:
                     for chunk in r.iter_content(chunk_size=8192):
+                        if self.cancel_installation:
+                            self.log_message("Download cancelled.")
+                            return None
                         f.write(chunk)
             self.log_message(f"Downloaded {local_filename}.")
             return local_filename
@@ -259,6 +263,9 @@ class WInstaller:
         for var in self.program_vars:
             var.set(not var.get())
 
+    def start_installation_thread(self):
+        install_thread = threading.Thread(target=self.install_programs)
+        install_thread.start()
 
 if __name__ == "__main__":
     root = tk.Tk()
