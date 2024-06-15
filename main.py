@@ -8,6 +8,7 @@ import threading
 
 CONFIG_FILE = "programs_config.json"
 LOGO_FILE = "WInstallerLogo.png"
+INSTALLER_FOLDER = "installers"
 
 
 class WInstaller:
@@ -43,6 +44,13 @@ class WInstaller:
             root, orient="horizontal", length=300, mode="determinate"
         )
         self.progress.pack(pady=10)
+
+        self.delete_installers_var = tk.BooleanVar()
+        self.delete_installers_check = tk.Checkbutton(
+            root, text="Delete installers after installation", variable=self.delete_installers_var
+        )
+        self.delete_installers_check.pack(pady=5)
+        self.delete_installers_check.select()
 
         self.install_button = tk.Button(
             root,
@@ -87,16 +95,19 @@ class WInstaller:
     def download_file(self, url, local_filename):
         try:
             self.log_message(f"Downloading {local_filename}...")
+            if not os.path.exists(INSTALLER_FOLDER):
+                os.makedirs(INSTALLER_FOLDER)
+            local_path = os.path.join(INSTALLER_FOLDER, local_filename)
             with requests.get(url, stream=True) as r:
                 r.raise_for_status()
-                with open(local_filename, "wb") as f:
+                with open(local_path, "wb") as f:
                     for chunk in r.iter_content(chunk_size=8192):
                         if self.cancel_installation:
                             self.log_message("Download cancelled.")
                             return None
                         f.write(chunk)
             self.log_message(f"Downloaded {local_filename}.")
-            return local_filename
+            return local_path
         except requests.RequestException as e:
             self.log_message(f"Failed to download {local_filename}: {e}")
             return None
@@ -131,6 +142,9 @@ class WInstaller:
                         check=True,
                     )
                     self.log_message(f"{program['name']} installed successfully.")
+                    if self.delete_installers_var.get():
+                        os.remove(installer_path)
+                        self.log_message(f"Deleted installer {installer_path}.")
                 except subprocess.CalledProcessError as e:
                     self.log_message(f"Failed to install {program['name']}: {e}")
             self.progress["value"] += 1
@@ -266,6 +280,7 @@ class WInstaller:
     def start_installation_thread(self):
         install_thread = threading.Thread(target=self.install_programs)
         install_thread.start()
+
 
 if __name__ == "__main__":
     root = tk.Tk()

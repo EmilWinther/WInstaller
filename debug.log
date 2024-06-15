@@ -1,0 +1,2 @@
+[26680:25440:0612/085427.224:VERBOSE1:installer.cc(386)] "C:\Users\Emil\WInstaller\installers\chrome_installer.exe" --silent --install --install=appguid={8A69D345-D564-463C-AFF1-A69D9E530F96}&browser=0&usagestats=1&appname=Google%20Chrome&needsadmin=prefers&brand=GTPM --enable-logging --vmodule=*/components/winhttp/*=1,*/components/update_client/*=2,*/chrome/updater/*=2
+[26680:25440:0612/085448.649:VERBOSE1:installer.cc(491)] Metainstaller WMain returned: 0, Windows error: 0
